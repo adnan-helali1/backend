@@ -1,0 +1,87 @@
+{
+    "info": {
+        "name": "B2B Dashboard APIs",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Store dashboard endpoints"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api"
+        },
+        {
+            "key": "token",
+            "value": ""
+        }
+    ],
+    "item": [
+        {
+            "name": "Store Dashboard",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/store/dashboard",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "store",
+                        "dashboard"
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Example - Success",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/dashboard",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "dashboard"
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"revenue_today\": 1250.5,\n  \"revenue_change_percent\": 12.5,\n  \"revenue_trend\": \"up\",\n  \"total_orders\": 42,\n  \"sales_today\": 6,\n  \"sales_change_percent\": 8.3,\n  \"sales_trend\": \"up\",\n  \"profit_margin\": 18.75,\n  \"low_stock\": 3,\n  \"pending_orders\": 5,\n  \"recent_orders\": [\n    {\n      \"id\": \"101\",\n      \"code\": \"SO-101\",\n      \"type\": \"sales_order\",\n      \"party_name\": \"Ahmed Ali\",\n      \"customer_name\": \"Ahmed Ali\",\n      \"supplier_name\": null,\n      \"status\": \"paid\",\n      \"total\": 250,\n      \"items_count\": 3,\n      \"items\": [\n        {\n          \"product_name\": \"Product A\",\n          \"quantity\": 1,\n          \"unit_price\": 100.0,\n          \"line_total\": 100.0\n        },\n        {\n          \"product_name\": \"Product B\",\n          \"quantity\": 2,\n          \"unit_price\": 75.0,\n          \"line_total\": 150.0\n        }\n      ],\n      \"created_at\": \"2026-05-19 10:15:21\"\n    },\n    {\n      \"id\": \"78\",\n      \"code\": \"PO-78\",\n      \"type\": \"purchase_order\",\n      \"party_name\": \"Al Noor Supplies\",\n      \"customer_name\": null,\n      \"supplier_name\": \"Al Noor Supplies\",\n      \"status\": \"submitted\",\n      \"total\": 410,\n      \"items_count\": 5,\n      \"items\": [\n        {\n          \"product_name\": \"Item X\",\n          \"quantity\": 3,\n          \"unit_price\": 50.0\n        },\n        {\n          \"product_name\": \"Item Y\",\n          \"quantity\": 2,\n          \"unit_price\": 130.0\n        }\n      ],\n      \"created_at\": \"2026-05-19 09:50:10\"\n    },\n    {\n      \"id\": \"102\",\n      \"code\": \"SO-102\",\n      \"type\": \"sales_order\",\n      \"party_name\": \"Sara Hassan\",\n      \"customer_name\": \"Sara Hassan\",\n      \"supplier_name\": null,\n      \"status\": \"draft\",\n      \"total\": 180,\n      \"items_count\": 2,\n      \"items\": [\n        {\n          \"product_name\": \"Product C\",\n          \"quantity\": 2,\n          \"unit_price\": 90.0,\n          \"line_total\": 180.0\n        }\n      ],\n      \"created_at\": \"2026-05-19 08:40:00\"\n    },\n    {\n      \"id\": \"79\",\n      \"code\": \"PO-79\",\n      \"type\": \"purchase_order\",\n      \"party_name\": \"Blue Star Trading\",\n      \"customer_name\": null,\n      \"supplier_name\": \"Blue Star Trading\",\n      \"status\": \"received\",\n      \"total\": 620,\n      \"items_count\": 4,\n      \"items\": [\n        {\n          \"product_name\": \"Item Z\",\n          \"quantity\": 4,\n          \"unit_price\": 155.0\n        }\n      ],\n      \"created_at\": \"2026-05-19 06:50:00\"\n    },\n    {\n      \"id\": \"103\",\n      \"code\": \"SO-103\",\n      \"type\": \"sales_order\",\n      \"party_name\": \"Mona Saad\",\n      \"customer_name\": \"Mona Saad\",\n      \"supplier_name\": null,\n      \"status\": \"paid\",\n      \"total\": 320,\n      \"items_count\": 1,\n      \"items\": [\n        {\n          \"product_name\": \"Product D\",\n          \"quantity\": 1,\n          \"unit_price\": 320.0,\n          \"line_total\": 320.0\n        }\n      ],\n      \"created_at\": \"2026-05-19 04:15:00\"\n    }\n  ]\n}"
+                }
+            ]
+        }
+    ]
+}

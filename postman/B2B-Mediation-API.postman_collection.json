@@ -1,0 +1,2468 @@
+{
+  "info": {
+    "_postman_id": "2b3a6f40-9c1c-4b42-9e5a-6d7b2c1f7c44",
+    "name": "B2B Mediation Platform API (Laravel 12 + JWT)",
+    "description": "## How to use\n- Set collection variables:\n  - `base_url` (example: `http://127.0.0.1:8001`)\n  - `admin_token` (paste from Admin Login response: `data.token`)\n  - `store_token` (paste from Store Login/Register response: `data.token`)\n\n## Important\n- **All create/update operations in this collection use `form-data`** as requested.\n- For array fields (like `items`), we send them as a **JSON string** inside form-data.\n\n## Response shape\nAll APIs return JSON in this shape:\n```json\n{ \"data\": ..., \"message\": \"...\", \"errors\": null }\n```\nOn errors, you may also receive: `error_code` + `request_id`.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8001",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "store_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Admin - Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "type": "text",
+                  "value": "admin@example.com",
+                  "description": "Admin email."
+                },
+                {
+                  "key": "password",
+                  "type": "text",
+                  "value": "password123",
+                  "description": "Admin password."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "login"
+              ]
+            },
+            "description": "Login as admin. Copy `data.token` into collection variable `admin_token`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Save admin token', function () {",
+                  "  const json = pm.response.json();",
+                  "  const token = json && json.data && json.data.token;",
+                  "  pm.expect(token, 'data.token').to.be.a('string').and.to.have.length.greaterThan(10);",
+                  "  pm.collectionVariables.set('admin_token', token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store - Auth",
+      "item": [
+        {
+          "name": "Store Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "My Store",
+                  "description": "Store name."
+                },
+                {
+                  "key": "owner_name",
+                  "type": "text",
+                  "value": "Owner",
+                  "description": "Owner name."
+                },
+                {
+                  "key": "phone",
+                  "type": "text",
+                  "value": "0999999999",
+                  "description": "Store phone."
+                },
+                {
+                  "key": "email",
+                  "type": "text",
+                  "value": "store1@example.com",
+                  "description": "Unique store email."
+                },
+                {
+                  "key": "password",
+                  "type": "text",
+                  "value": "password123",
+                  "description": "Min 8 chars."
+                },
+                {
+                  "key": "address",
+                  "type": "text",
+                  "value": "Address",
+                  "description": "Optional."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "register"
+              ]
+            },
+            "description": "Register store account. Copy `data.token` into collection variable `store_token`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Save store token (register)', function () {",
+                  "  const json = pm.response.json();",
+                  "  const token = json && json.data && json.data.token;",
+                  "  pm.expect(token, 'data.token').to.be.a('string').and.to.have.length.greaterThan(10);",
+                  "  pm.collectionVariables.set('store_token', token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "type": "text",
+                  "value": "store1@example.com",
+                  "description": "Store email."
+                },
+                {
+                  "key": "password",
+                  "type": "text",
+                  "value": "password123",
+                  "description": "Store password."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "login"
+              ]
+            },
+            "description": "Login as store. Copy `data.token` into collection variable `store_token`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Save store token (login)', function () {",
+                  "  const json = pm.response.json();",
+                  "  const token = json && json.data && json.data.token;",
+                  "  pm.expect(token, 'data.token').to.be.a('string').and.to.have.length.greaterThan(10);",
+                  "  pm.collectionVariables.set('store_token', token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/store/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Suppliers",
+      "item": [
+        {
+          "name": "List Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers?search=&status=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name (contains)."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter: `active` or `inactive`."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Supplier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "Supplier A",
+                  "description": "Required."
+                },
+                {
+                  "key": "phone",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "email",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "address",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "status",
+                  "type": "text",
+                  "value": "active",
+                  "description": "Optional. Options: `active`, `inactive`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Supplier",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Supplier",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "Supplier A (Updated)",
+                  "description": "Optional."
+                },
+                {
+                  "key": "phone",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "email",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "address",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "status",
+                  "type": "text",
+                  "value": "active",
+                  "description": "Options: `active`, `inactive`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Supplier",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Categories (Media Library)",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/categories?search=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            },
+            "description": "Categories include `image_url` (from Spatie Media Library)."
+          }
+        },
+        {
+          "name": "Create Category (with image file)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "Beverages",
+                  "description": "Required. Unique."
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Optional. Image file (max 5MB). Stored in media collection `image`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Category (name/image)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "Beverages (Updated)",
+                  "description": "Optional."
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Optional. Replaces previous image (collection cleared)."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Supplier Categories (Pivot)",
+      "item": [
+        {
+          "name": "Get Supplier Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers/1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers",
+                "1",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sync Supplier Categories",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_ids",
+                  "type": "text",
+                  "value": "[1,2,3]",
+                  "description": "JSON array string of category IDs. Example: `[1,2,3]`.\nNote: Backend expects an array. If your Postman supports it, you can also send multiple keys like `category_ids[]`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/suppliers/1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "suppliers",
+                "1",
+                "categories"
+              ]
+            },
+            "description": "Sync (replace) supplier categories."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Products (Master)",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/products?supplier_id=&category_id=&status=&search=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "supplier_id",
+                  "value": "",
+                  "description": "Optional filter (legacy in master products; supplier-product is the real offer)."
+                },
+                {
+                  "key": "category_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Options: `available`, `unavailable`, `archived`."
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "supplier_id",
+                  "type": "text",
+                  "value": "1",
+                  "description": "Required. Used to validate category belongs to supplier (pivot). In multi-supplier model, offers are added via `supplier-products`."
+                },
+                {
+                  "key": "category_id",
+                  "type": "text",
+                  "value": "1",
+                  "description": "Required. Must be assigned to supplier."
+                },
+                {
+                  "key": "name",
+                  "type": "text",
+                  "value": "Product X",
+                  "description": "Required."
+                },
+                {
+                  "key": "description",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                },
+                {
+                  "key": "buy_price",
+                  "type": "text",
+                  "value": "10.50",
+                  "description": "Required. (Master price) — real supplier pricing is in `supplier-products.buy_price`."
+                },
+                {
+                  "key": "stock_quantity",
+                  "type": "text",
+                  "value": "0",
+                  "description": "Optional. (Master stock) — real supplier stock is in `supplier-products.stock_quantity`."
+                },
+                {
+                  "key": "status",
+                  "type": "text",
+                  "value": "available",
+                  "description": "Optional. Options: `available`, `unavailable`, `archived`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "products"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Supplier Products (Offers)",
+      "description": "This is the **multi-supplier** layer. Each record is a supplier offer for a master product.\nFields: `supplier_id`, `product_id`, `buy_price`, `stock_quantity`, `status`.",
+      "item": [
+        {
+          "name": "List Supplier Products (Offers)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products?supplier_id=&product_id=&status=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products"
+              ],
+              "query": [
+                {
+                  "key": "supplier_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "product_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Options: `available`, `unavailable`, `archived`."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create/Upsert Supplier Product (Offer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "supplier_id",
+                  "type": "text",
+                  "value": "1",
+                  "description": "Required. Supplier ID."
+                },
+                {
+                  "key": "product_id",
+                  "type": "text",
+                  "value": "1",
+                  "description": "Required. Master product ID."
+                },
+                {
+                  "key": "buy_price",
+                  "type": "text",
+                  "value": "9.75",
+                  "description": "Required. Purchase cost from this supplier."
+                },
+                {
+                  "key": "stock_quantity",
+                  "type": "text",
+                  "value": "100",
+                  "description": "Optional. Default 0."
+                },
+                {
+                  "key": "status",
+                  "type": "text",
+                  "value": "available",
+                  "description": "Optional. Options: `available`, `unavailable`, `archived`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products"
+              ]
+            },
+            "description": "Creates (or updates) the offer for (supplier_id, product_id)."
+          }
+        },
+        {
+          "name": "Update Supplier Product Stock",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "stock_quantity",
+                  "type": "text",
+                  "value": "50",
+                  "description": "Required. New stock quantity (integer >= 0)."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products/1/stock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products",
+                "1",
+                "stock"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Supplier Product",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Supplier Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "buy_price",
+                  "type": "text",
+                  "value": "9.50",
+                  "description": "Optional. Updated supplier buy price."
+                },
+                {
+                  "key": "stock_quantity",
+                  "type": "text",
+                  "value": "75",
+                  "description": "Optional. Updated stock quantity."
+                },
+                {
+                  "key": "status",
+                  "type": "text",
+                  "value": "available",
+                  "description": "Optional. Options: `available`, `unavailable`, `archived`."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products",
+                "1"
+              ]
+            },
+            "description": "Update supplier offer fields for a specific supplier-product record."
+          }
+        },
+        {
+          "name": "Delete Supplier Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/supplier-products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "supplier-products",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store - Catalog",
+      "description": "Store selects supplier offers into its catalog (`store_products`). Each catalog item can override `sell_price` and `is_active`.",
+      "item": [
+        {
+          "name": "List Store Catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/store/catalog?is_active=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "catalog"
+              ],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "",
+                  "description": "Optional boolean: true/false."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Supplier Offer to Catalog",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "sell_price",
+                  "type": "text",
+                  "value": "12.00",
+                  "description": "Optional. If empty, sales must provide unit_sell_price per item."
+                },
+                {
+                  "key": "is_active",
+                  "type": "text",
+                  "value": "true",
+                  "description": "Optional. true/false. Default true."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/catalog/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "catalog",
+                "1"
+              ]
+            },
+            "description": "Path param is `supplierProductId` (supplier offer id)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store - Purchases (Orders to Suppliers)",
+      "description": "Store creates purchase orders using **supplier offers** (`supplier_product_id`). If items belong to multiple suppliers, backend creates **multiple orders** automatically (1 per supplier).",
+      "item": [
+        {
+          "name": "Create Purchase Order(s)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "items",
+                  "type": "text",
+                  "value": "[{\"supplier_product_id\":1,\"quantity\":2},{\"supplier_product_id\":2,\"quantity\":1}]",
+                  "description": "Required. JSON array string.\nEach item: { supplier_product_id (int), quantity (int>=1) }.\nIf supplier_product_id belong to multiple suppliers, multiple orders will be created."
+                },
+                {
+                  "key": "notes",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional notes."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List My Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/store/orders?status=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Options: `draft`, `submitted`, `cancelled`, `received`."
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Purchase Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/store/orders/1/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "orders",
+                "1",
+                "cancel"
+              ]
+            },
+            "description": "Allowed only when status = `submitted`. Restores stock and writes a credit ledger entry."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store - Sales",
+      "description": "Store creates sales orders using catalog items (`store_product_id`). Sell price can be taken from catalog `sell_price` or passed per item as `unit_sell_price`.\nStatus flow: `draft` -> (pay) -> `paid`.\nCancel allowed only when not paid.",
+      "item": [
+        {
+          "name": "Create Sales Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "customer",
+                  "type": "text",
+                  "value": "{\"name\":\"Customer\",\"phone\":\"0999999999\"}",
+                  "description": "Optional. JSON object string. If provided, a customer record will be created for this store.\nExample: {\"name\":\"A\",\"phone\":\"...\",\"email\":\"...\",\"address\":\"...\"}"
+                },
+                {
+                  "key": "customer_id",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional. Use existing customer id instead of creating new."
+                },
+                {
+                  "key": "items",
+                  "type": "text",
+                  "value": "[{\"store_product_id\":1,\"quantity\":2,\"unit_sell_price\":12.5}]",
+                  "description": "Required. JSON array string.\nEach item: { store_product_id (int), quantity (int>=1), unit_sell_price (optional) }.\nIf unit_sell_price omitted, catalog sell_price must exist."
+                },
+                {
+                  "key": "notes",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/sales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "sales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Pay Sales Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{store_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "amount",
+                  "type": "text",
+                  "value": "10.00",
+                  "description": "Required. Payment amount."
+                },
+                {
+                  "key": "method",
+                  "type": "text",
+                  "value": "cash",
+                  "description": "Optional. Any string (ex: cash, transfer)."
+                },
+                {
+                  "key": "occurred_at",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional date/time. If empty uses now()."
+                },
+                {
+                  "key": "notes",
+                  "type": "text",
+                  "value": "",
+                  "description": "Optional."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/store/sales/1/pay",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "store",
+                "sales",
+                "1",
+                "pay"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Dashboard Views (Orders & Sales)",
+      "item": [
+        {
+          "name": "List Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/orders?store_id=&supplier_id=&status=&from_date=&to_date=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "store_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "supplier_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "draft/submitted/cancelled/received"
+                },
+                {
+                  "key": "from_date",
+                  "value": "",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "to_date",
+                  "value": "",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Sales Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/sales?store_id=&status=&from_date=&to_date=&per_page=15",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "sales"
+              ],
+              "query": [
+                {
+                  "key": "store_id",
+                  "value": "",
+                  "description": "Optional filter."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "draft/paid/cancelled"
+                },
+                {
+                  "key": "from_date",
+                  "value": "",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "to_date",
+                  "value": "",
+                  "description": "YYYY-MM-DD"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "description": "Pagination size."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Stats",
+      "item": [
+        {
+          "name": "Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats",
+                "overview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sales Trend (6 months)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats/sales-trend",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats",
+                "sales-trend"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Top Stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats/top-stores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats",
+                "top-stores"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Low Stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats/low-stock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats",
+                "low-stock"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Added - Missing Endpoints",
+      "item": [
+        {
+          "name": "Admin - Stores",
+          "item": [
+            {
+              "name": "List Stores",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores?per_page=15",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores"
+                  ],
+                  "query": [
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Store",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Store Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "status",
+                      "type": "text",
+                      "value": "active"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores/1/status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores",
+                    "1",
+                    "status"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Store Finance",
+          "item": [
+            {
+              "name": "Get Store Ledger",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores/1/ledger",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores",
+                    "1",
+                    "ledger"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Post Store Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "amount",
+                      "type": "text",
+                      "value": "100.00"
+                    },
+                    {
+                      "key": "method",
+                      "type": "text",
+                      "value": "transfer"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores/1/payments",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores",
+                    "1",
+                    "payments"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Post Store Adjustment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "amount",
+                      "type": "text",
+                      "value": "-10.00"
+                    },
+                    {
+                      "key": "notes",
+                      "type": "text",
+                      "value": "Correction"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/admin/stores/1/adjustments",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "stores",
+                    "1",
+                    "adjustments"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Products (extra)",
+          "item": [
+            {
+              "name": "Get Product",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/admin/products/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "type": "text",
+                      "value": "Product Updated"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/admin/products/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/admin/products/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Product Stock",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{admin_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "stock_quantity",
+                      "type": "text",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/admin/products/1/stock",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "1",
+                    "stock"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store - Profile & Products",
+          "item": [
+            {
+              "name": "Get My Profile",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "profile"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update My Profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "type": "text",
+                      "value": "My Store Updated"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/store/profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "profile"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "List Supplier Offers (Browse)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/products?supplier_id=&category_id=&search=&in_stock_only=&per_page=15",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "products"
+                  ],
+                  "query": [
+                    {
+                      "key": "supplier_id",
+                      "value": ""
+                    },
+                    {
+                      "key": "category_id",
+                      "value": ""
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "in_stock_only",
+                      "value": ""
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Supplier Offer",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/products/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "products",
+                    "1"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store - Catalog (extra)",
+          "item": [
+            {
+              "name": "Update Catalog Item",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "sell_price",
+                      "type": "text",
+                      "value": "13.50"
+                    },
+                    {
+                      "key": "is_active",
+                      "type": "text",
+                      "value": "true"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/store/catalog/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "catalog",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Remove Catalog Item",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/catalog/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "catalog",
+                    "1"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store - Sales (extra)",
+          "item": [
+            {
+              "name": "List My Sales",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/sales?status=&per_page=15",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "sales"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": ""
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Sale",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/sales/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "sales",
+                    "1"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Cancel Sale",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/sales/1/cancel",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "sales",
+                    "1",
+                    "cancel"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Store - Ledger (extra)",
+          "item": [
+            {
+              "name": "Get My Ledger",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{store_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/store/ledger",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "store",
+                    "ledger"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
