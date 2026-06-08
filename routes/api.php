@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\SupplierController;
 use App\Http\Controllers\Api\Store\CatalogController;
 use App\Http\Controllers\Api\Store\DashboardController;
 use App\Http\Controllers\Api\Store\LedgerController;
+use App\Http\Controllers\Api\Store\OfferController;
 use App\Http\Controllers\Api\Store\OrderController;
 use App\Http\Controllers\Api\Store\ProductController as StoreProductController;
 use App\Http\Controllers\Api\Store\ProfileController;
@@ -93,6 +94,8 @@ Route::prefix('store')->group(function () {
         Route::get('sales/{sale}', [SalesController::class, 'show']);
         Route::post('sales/{sale}/pay', [SalesController::class, 'pay']);
         Route::put('sales/{sale}/cancel', [SalesController::class, 'cancel']);
+
+        Route::get('offers', [OfferController::class, 'index']);
 
         Route::get('dashboard', [DashboardController::class, 'show']);
     });

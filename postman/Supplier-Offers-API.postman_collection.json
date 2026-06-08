@@ -1,0 +1,210 @@
+{
+    "info": {
+        "name": "Supplier Offers APIs",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Store supplier offers endpoints - Get all available supplier offers with filters and search"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api"
+        },
+        {
+            "key": "token",
+            "value": ""
+        }
+    ],
+    "item": [
+        {
+            "name": "Get All Offers",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/store/offers?per_page=15",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "store",
+                        "offers"
+                    ],
+                    "query": [
+                        {
+                            "key": "per_page",
+                            "value": "15"
+                        },
+                        {
+                            "key": "search",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "category",
+                            "value": "",
+                            "disabled": true
+                        },
+                        {
+                            "key": "status",
+                            "value": "available",
+                            "disabled": true
+                        }
+                    ]
+                }
+            },
+            "response": [
+                {
+                    "name": "Example - All Offers",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/offers?per_page=15",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "offers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"offer_price\": \"2.50\",\n      \"offer_stock\": 150,\n      \"status\": \"available\",\n      \"expires_at\": \"2026-06-30 23:59:59\",\n      \"supplier_product_id\": 1,\n      \"supplier_product\": {\n        \"id\": 1,\n        \"supplier\": {\"id\": 1, \"name\": \"FreshDairy Co.\"},\n        \"product\": {\"id\": 1, \"name\": \"Premium Organic Milk\", \"category\": {\"id\": 1, \"name\": \"Dairy\"}}\n      }\n    }\n  ],\n  \"stats\": {\"total_offers\": 6, \"available_offers\": 5},\n  \"pagination\": {\"per_page\": 15, \"current_page\": 1, \"total\": 6, \"last_page\": 1},\n  \"message\": \"Success\",\n  \"errors\": null\n}"
+                },
+                {
+                    "name": "Example - Search by Product",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/offers?search=Milk&per_page=15",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "offers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "Milk"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"offer_price\": \"2.50\",\n      \"offer_stock\": 150,\n      \"status\": \"available\",\n      \"supplier_product\": {\"supplier\": {\"id\": 1, \"name\": \"FreshDairy Co.\"}, \"product\": {\"id\": 1, \"name\": \"Premium Organic Milk\", \"category\": {\"id\": 1, \"name\": \"Dairy\"}}}\n    }\n  ],\n  \"stats\": {\"total_offers\": 6, \"available_offers\": 2},\n  \"pagination\": {\"per_page\": 15, \"current_page\": 1, \"total\": 2, \"last_page\": 1},\n  \"message\": \"Success\",\n  \"errors\": null\n}"
+                },
+                {
+                    "name": "Example - Filter by Category",
+                    "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/store/offers?category=1&per_page=15",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "store",
+                                "offers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15"
+                                }
+                            ]
+                        }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "_postman_previewlanguage": "json",
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"data\": [],\n  \"stats\": {\"total_offers\": 6, \"available_offers\": 5},\n  \"pagination\": {\"per_page\": 15, \"current_page\": 1, \"total\": 4, \"last_page\": 1},\n  \"message\": \"Success\",\n  \"errors\": null\n}"
+                }
+            ]
+        }
+    ]
+}
