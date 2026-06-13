@@ -135,36 +135,36 @@ class CatalogController extends Controller
             'errors' => null,
         ], 201);
     }
+public function update(Request $request, string $storeProductId)
+{
+    $store = Auth::guard('store_api')->user();
 
-    public function update(Request $request, string $supplierProductId)
-    {
-        $store = Auth::guard('store_api')->user();
+    // ✅ غيّر البحث ليستخدم id بدل supplier_product_id
+    $storeProduct = StoreProduct::where('store_id', $store->id)
+        ->where('id', (int) $storeProductId)
+        ->firstOrFail();
 
-        $storeProduct = StoreProduct::where('store_id', $store->id)
-            ->where('supplier_product_id', (int) $supplierProductId)
-            ->firstOrFail();
+    $validator = Validator::make($request->all(), [
+        'sell_price' => ['nullable', 'numeric', 'min:0'],
+        'is_active' => ['nullable', 'boolean'],
+    ]);
 
-        $validator = Validator::make($request->all(), [
-            'sell_price' => ['nullable', 'numeric', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'data' => null,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $storeProduct->update($validator->validated());
-
+    if ($validator->fails()) {
         return response()->json([
-            'data' => $storeProduct->fresh()->load(['supplierProduct.supplier', 'supplierProduct.product.category']),
-            'message' => 'Updated',
-            'errors' => null,
-        ]);
+            'data' => null,
+            'message' => 'Validation error',
+            'errors' => $validator->errors(),
+        ], 422);
     }
+
+    $storeProduct->update($validator->validated());
+
+    return response()->json([
+        'data' => $storeProduct->fresh()->load(['supplierProduct.supplier', 'supplierProduct.product.category']),
+        'message' => 'Updated',
+        'errors' => null,
+    ]);
+}
 
     public function remove(string $supplierProductId)
     {

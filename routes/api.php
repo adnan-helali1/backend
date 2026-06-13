@@ -79,7 +79,7 @@ Route::prefix('store')->group(function () {
 
         Route::get('catalog', [CatalogController::class, 'index']);
         Route::post('catalog/{supplierProduct}', [CatalogController::class, 'add']);
-        Route::patch('catalog/{supplierProduct}', [CatalogController::class, 'update']);
+    Route::patch('catalog/{storeProductId}', [CatalogController::class, 'update']);  // ✅ غيّر هنا
         Route::delete('catalog/{supplierProduct}', [CatalogController::class, 'remove']);
 
         Route::post('orders', [OrderController::class, 'store']);
