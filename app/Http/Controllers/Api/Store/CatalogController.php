@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\Store;
 
 use App\Http\Controllers\Controller;
 use App\Exceptions\ApiException;
+use App\Http\Resources\Store\StoreCatalogCollection;
 use App\Models\SupplierProduct;
 use App\Models\StoreProduct;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -16,21 +18,75 @@ class CatalogController extends Controller
     {
         $store = Auth::guard('store_api')->user();
 
-        $query = StoreProduct::query()
-            ->where('store_id', $store->id)
-            ->with(['supplierProduct.supplier', 'supplierProduct.product.category']);
+        $query = $this->catalogQuery($store->id, $request)
+            ->with([
+                'supplierProduct:id,supplier_id,product_id,buy_price,stock_quantity',
+                'supplierProduct.supplier:id,name',
+                'supplierProduct.product:id,category_id,name',
+                'supplierProduct.product.category',
+            ]);
 
+        $summary = $this->catalogSummary($store->id, $request);
+
+        $catalog = $query->orderByDesc('store_products.id')
+            ->paginate((int) $request->query('per_page', 15));
+
+        return new StoreCatalogCollection($catalog, $summary);
+    }
+
+    private function catalogQuery(int $storeId, Request $request): Builder
+    {
+        $query = StoreProduct::query()
+            ->select([
+                'store_products.id',
+                'store_products.supplier_product_id',
+                'store_products.sell_price',
+                'store_products.is_active',
+            ])
+            ->where('store_products.store_id', $storeId);
+
+        $this->applyCatalogFilters($query, $request);
+
+        return $query;
+    }
+
+    private function applyCatalogFilters(Builder $query, Request $request): void
+    {
         if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->query('is_active'), FILTER_VALIDATE_BOOLEAN));
+            $query->where(
+                'store_products.is_active',
+                filter_var($request->query('is_active'), FILTER_VALIDATE_BOOLEAN),
+            );
         }
 
-        $catalog = $query->orderByDesc('id')->paginate((int) $request->query('per_page', 15));
+        if ($request->filled('search')) {
+            $search = (string) $request->query('search');
+            $query->whereHas(
+                'supplierProduct.product',
+                fn (Builder $productQuery) => $productQuery->where('name', 'like', "%{$search}%"),
+            );
+        }
+    }
 
-        return response()->json([
-            'data' => $catalog,
-            'message' => 'Success',
-            'errors' => null,
-        ]);
+    private function catalogSummary(int $storeId, Request $request): array
+    {
+        $summaryQuery = StoreProduct::query()
+            ->where('store_products.store_id', $storeId)
+            ->join('supplier_products', 'store_products.supplier_product_id', '=', 'supplier_products.id');
+
+        $this->applyCatalogFilters($summaryQuery, $request);
+
+        $result = $summaryQuery
+            ->selectRaw('COUNT(store_products.id) as total_products')
+            ->selectRaw('SUM(CASE WHEN store_products.is_active = 1 THEN 1 ELSE 0 END) as active_products')
+            ->selectRaw('COALESCE(SUM((COALESCE(store_products.sell_price, 0) - supplier_products.buy_price) * supplier_products.stock_quantity), 0) as total_profit')
+            ->first();
+
+        return [
+            'total_products' => (int) ($result->total_products ?? 0),
+            'active_products' => (int) ($result->active_products ?? 0),
+            'total_profit' => (float) ($result->total_profit ?? 0),
+        ];
     }
 
     public function add(Request $request, string $supplierProductId)
@@ -79,36 +135,36 @@ class CatalogController extends Controller
             'errors' => null,
         ], 201);
     }
+public function update(Request $request, string $storeProductId)
+{
+    $store = Auth::guard('store_api')->user();
 
-    public function update(Request $request, string $supplierProductId)
-    {
-        $store = Auth::guard('store_api')->user();
+    // ✅ غيّر البحث ليستخدم id بدل supplier_product_id
+    $storeProduct = StoreProduct::where('store_id', $store->id)
+        ->where('id', (int) $storeProductId)
+        ->firstOrFail();
 
-        $storeProduct = StoreProduct::where('store_id', $store->id)
-            ->where('supplier_product_id', (int) $supplierProductId)
-            ->firstOrFail();
+    $validator = Validator::make($request->all(), [
+        'sell_price' => ['nullable', 'numeric', 'min:0'],
+        'is_active' => ['nullable', 'boolean'],
+    ]);
 
-        $validator = Validator::make($request->all(), [
-            'sell_price' => ['nullable', 'numeric', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'data' => null,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $storeProduct->update($validator->validated());
-
+    if ($validator->fails()) {
         return response()->json([
-            'data' => $storeProduct->fresh()->load(['supplierProduct.supplier', 'supplierProduct.product.category']),
-            'message' => 'Updated',
-            'errors' => null,
-        ]);
+            'data' => null,
+            'message' => 'Validation error',
+            'errors' => $validator->errors(),
+        ], 422);
     }
+
+    $storeProduct->update($validator->validated());
+
+    return response()->json([
+        'data' => $storeProduct->fresh()->load(['supplierProduct.supplier', 'supplierProduct.product.category']),
+        'message' => 'Updated',
+        'errors' => null,
+    ]);
+}
 
     public function remove(string $supplierProductId)
     {
