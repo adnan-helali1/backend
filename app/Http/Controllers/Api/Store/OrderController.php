@@ -16,28 +16,39 @@ use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
-    {
-        $store = Auth::guard('store_api')->user();
+   public function index(Request $request)
+{
+    $store = Auth::guard('store_api')->user();
 
-        $query = PurchaseOrder::query()
-            ->where('store_id', $store->id)
-            ->with(['supplier', 'items.supplierProduct.supplier', 'items.supplierProduct.product.category']);
-
-        if ($request->filled('status')) {
-            $query->where('status', (string) $request->query('status'));
-        }
-
-        $orders = $query->orderByDesc('id')->paginate((int) $request->query('per_page', 15));
-
-        return response()->json([
-            'data' => $orders,
-            'message' => 'Success',
-            'errors' => null,
+    $query = PurchaseOrder::query()
+        ->where('store_id', $store->id)
+        ->with([
+            'supplier',
+            'items.supplierProduct.supplier',
+            'items.supplierProduct.product.category'
         ]);
+
+    if ($request->filled('status')) {
+        $query->where('status', (string) $request->query('status'));
     }
 
-    public function show(string $id)
+    $totalBuy = (clone $query)->sum('total_buy');
+    $totalSell = (clone $query)->sum('total_sell');
+
+    $orders = $query
+        ->orderByDesc('id')
+        ->paginate((int) $request->query('per_page', 15));
+
+    return response()->json([
+        'data' => $orders,
+        'message' => 'Success',
+        'errors' => null,
+        'summery' => [
+            'total_buy' => (float) $totalBuy,
+            'total_sell' => (float) $totalSell,
+        ],
+    ]);
+}    public function show(string $id)
     {
         $store = Auth::guard('store_api')->user();
 
