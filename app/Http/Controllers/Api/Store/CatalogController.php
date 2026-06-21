@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\Store;
 
-use App\Http\Controllers\Controller;
 use App\Exceptions\ApiException;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\Store\StoreCatalogCollection;
-use App\Models\SupplierProduct;
+use App\Models\StoreInventory;
 use App\Models\StoreProduct;
+use App\Models\SupplierProduct;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,6 +129,16 @@ class CatalogController extends Controller
                 'is_active' => $data['is_active'] ?? true,
             ]
         );
+        StoreInventory::firstOrCreate(
+    [
+        'store_id' => $store->id,
+        'store_product_id' => $storeProduct->id,
+    ],
+    [
+        'quantity' => 0,
+        'min_stock' => 10,
+    ]
+);
 
         return response()->json([
             'data' => $storeProduct->load(['supplierProduct.supplier', 'supplierProduct.product.category']),

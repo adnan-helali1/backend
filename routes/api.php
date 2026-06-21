@@ -6,13 +6,14 @@ use App\Http\Controllers\Api\Admin\FinanceController;
 use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\SalesController as AdminSalesController;
-use App\Http\Controllers\Api\Admin\SupplierProductController;
 use App\Http\Controllers\Api\Admin\StatsController;
 use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\Admin\SupplierCategoryController;
 use App\Http\Controllers\Api\Admin\SupplierController;
+use App\Http\Controllers\Api\Admin\SupplierProductController;
 use App\Http\Controllers\Api\Store\CatalogController;
 use App\Http\Controllers\Api\Store\DashboardController;
+use App\Http\Controllers\Api\Store\InventoryController;
 use App\Http\Controllers\Api\Store\LedgerController;
 use App\Http\Controllers\Api\Store\OfferController;
 use App\Http\Controllers\Api\Store\OrderController;
@@ -98,6 +99,14 @@ Route::prefix('store')->group(function () {
         Route::get('offers', [OfferController::class, 'index']);
 
         Route::get('dashboard', [DashboardController::class, 'show']);
+
+        Route::middleware('auth:store_api')->group(function () {
+            Route::get('inventory', [InventoryController::class, 'index']);
+Route::post('inventory/manual-add', [InventoryController::class, 'manualAdd']);
+
+        });
+        
+
     });
 });
 
