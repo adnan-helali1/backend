@@ -47,6 +47,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('orders', [AdminOrderController::class, 'index']);
         Route::get('orders/{order}', [AdminOrderController::class, 'show']);
+        Route::put('orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
 
         Route::get('sales', [AdminSalesController::class, 'index']);
         Route::get('sales/{sale}', [AdminSalesController::class, 'show']);
@@ -80,8 +81,8 @@ Route::prefix('store')->group(function () {
 
         Route::get('catalog', [CatalogController::class, 'index']);
         Route::post('catalog/{supplierProduct}', [CatalogController::class, 'add']);
-    Route::patch('catalog/{storeProductId}', [CatalogController::class, 'update']);  // ✅ غيّر هنا
-        Route::delete('catalog/{supplierProduct}', [CatalogController::class, 'remove']);
+        Route::patch('catalog/{storeProductId}', [CatalogController::class, 'update']);
+        Route::delete('catalog/{storeProductId}', [CatalogController::class, 'remove']);
 
         Route::post('orders', [OrderController::class, 'store']);
         Route::get('orders', [OrderController::class, 'index']);

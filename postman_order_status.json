@@ -1,0 +1,238 @@
+{
+  "info": {
+    "name": "Order Status API - Admin",
+    "description": "اختبار تغيير حالة الطلبات (Admin)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('admin_token', jsonData.data.token);",
+              "    console.log('✅ Admin Token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@dashboard.test\",\n  \"password\": \"Admin@12345\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "login"]
+        },
+        "description": "تسجيل دخول المسؤول والحصول على Token"
+      }
+    },
+    {
+      "name": "2. Get All Orders",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.data.data && jsonData.data.data.length > 0) {",
+              "        pm.collectionVariables.set('order_id', jsonData.data.data[0].id);",
+              "        console.log('✅ Order ID saved: ' + jsonData.data.data[0].id);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders"]
+        },
+        "description": "عرض جميع الطلبات"
+      }
+    },
+    {
+      "name": "3. Get Order Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders/{{order_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders", "{{order_id}}"]
+        },
+        "description": "عرض تفاصيل طلب محدد"
+      }
+    },
+    {
+      "name": "4. Update Status to RECEIVED",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"received\",\n  \"notes\": \"تم استلام الشحنة بالكامل وإضافتها للمخزون\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders", "{{order_id}}", "status"]
+        },
+        "description": "تغيير حالة الطلب إلى 'received' - تمت الاستلام"
+      }
+    },
+    {
+      "name": "5. Update Status to CANCELLED",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"cancelled\",\n  \"notes\": \"تم الإلغاء بطلب من المتجر\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders", "{{order_id}}", "status"]
+        },
+        "description": "تغيير حالة الطلب إلى 'cancelled' - ملغى"
+      }
+    },
+    {
+      "name": "[Error] Invalid Transition",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"draft\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders", "{{order_id}}", "status"]
+        },
+        "description": "محاولة تغيير غير مسموح (للاختبار)"
+      }
+    },
+    {
+      "name": "[Error] Invalid Status Value",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"invalid_status\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/orders/{{order_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "orders", "{{order_id}}", "status"]
+        },
+        "description": "محاولة إرسال حالة غير صحيحة (Validation Error)"
+      }
+    },
+    {
+      "name": "6. Get Store Inventory",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/stores/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "stores", "1"]
+        },
+        "description": "عرض معلومات المتجر (للتحقق من التغييرات)"
+      }
+    }
+  ]
+}

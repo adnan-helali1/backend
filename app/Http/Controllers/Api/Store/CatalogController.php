@@ -168,7 +168,15 @@ public function update(Request $request, string $storeProductId)
         ], 422);
     }
 
-    $storeProduct->update($validator->validated());
+    // ✅ تحديث فقط الحقول المرسلة
+    $data = $validator->validated();
+    
+    // إزالة القيم null لتجنب مسح البيانات الموجودة
+    $data = array_filter($data, fn($value) => $value !== null);
+    
+    if (!empty($data)) {
+        $storeProduct->update($data);
+    }
 
     return response()->json([
         'data' => $storeProduct->fresh()->load(['supplierProduct.supplier', 'supplierProduct.product.category']),
@@ -177,13 +185,57 @@ public function update(Request $request, string $storeProductId)
     ]);
 }
 
-    public function remove(string $supplierProductId)
+    public function remove(string $storeProductId)
     {
         $store = Auth::guard('store_api')->user();
 
-        StoreProduct::where('store_id', $store->id)
-            ->where('supplier_product_id', (int) $supplierProductId)
-            ->delete();
+        // البحث عن المنتج
+        $storeProduct = StoreProduct::where('store_id', $store->id)
+            ->where('id', (int) $storeProductId)
+            ->first();
+
+        if (!$storeProduct) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Catalog item not found',
+                'errors' => ['id' => ['The specified catalog item does not exist']],
+            ], 404);
+        }
+
+        // التحقق من وجود مبيعات مرتبطة بهذا المنتج
+        $hasSales = \DB::table('sales_items')
+            ->where('store_product_id', $storeProduct->id)
+            ->exists();
+
+        if ($hasSales) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Cannot delete catalog item',
+                'errors' => [
+                    'id' => ['This product has sales history and cannot be deleted. Consider deactivating it instead.']
+                ],
+            ], 422);
+        }
+
+        // التحقق من وجود طلبات شراء مرتبطة (نفس المتجر ونفس منتج المورد)
+        $hasOrders = \DB::table('order_items')
+            ->join('purchase_orders', 'order_items.order_id', '=', 'purchase_orders.id')
+            ->where('purchase_orders.store_id', $storeProduct->store_id)
+            ->where('order_items.supplier_product_id', $storeProduct->supplier_product_id)
+            ->exists();
+
+        if ($hasOrders) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Cannot delete catalog item',
+                'errors' => [
+                    'id' => ['This product has purchase history and cannot be deleted. Consider deactivating it instead.']
+                ],
+            ], 422);
+        }
+
+        // حذف المنتج إذا لم يكن مستخدماً
+        $storeProduct->delete();
 
         return response()->noContent();
     }

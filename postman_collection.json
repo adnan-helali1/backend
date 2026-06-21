@@ -1,0 +1,271 @@
+{
+  "info": {
+    "name": "Store API - Catalog Testing",
+    "description": "مجموعة اختبارات API لتحديث كتالوج المتجر",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "store_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Store Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.environment.set('store_token', jsonData.data.token);",
+              "    pm.collectionVariables.set('store_token', jsonData.data.token);",
+              "    console.log('Token saved: ' + jsonData.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"store@client.test\",\n  \"password\": \"Store@12345\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "login"]
+        },
+        "description": "تسجيل دخول المتجر والحصول على Token"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get Catalog",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog"]
+        },
+        "description": "عرض كتالوج المنتجات للمتجر"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Update Catalog Item (ID=1)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sell_price\": 1.25,\n  \"is_active\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog", "1"]
+        },
+        "description": "تحديث سعر البيع والحالة للمنتج ID=1"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Disable Product (ID=2)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_active\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog/2",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog", "2"]
+        },
+        "description": "تعطيل المنتج"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Update Price Only (ID=3)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sell_price\": 2.50\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog/3",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog", "3"]
+        },
+        "description": "تحديث السعر فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "6. [Error] Invalid ID (404)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sell_price\": 1.00\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog/999",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog", "999"]
+        },
+        "description": "اختبار خطأ: ID غير موجود"
+      },
+      "response": []
+    },
+    {
+      "name": "7. [Error] Negative Price (422)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sell_price\": -10\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/store/catalog/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "catalog", "1"]
+        },
+        "description": "اختبار خطأ: سعر سالب"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Get Inventory",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{store_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/store/inventory",
+          "host": ["{{base_url}}"],
+          "path": ["api", "store", "inventory"]
+        },
+        "description": "عرض المخزون"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('admin_token', jsonData.data.token);",
+              "    console.log('Admin Token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@dashboard.test\",\n  \"password\": \"Admin@12345\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "login"]
+        },
+        "description": "تسجيل دخول المسؤول (للاختبارات الإضافية)"
+      },
+      "response": []
+    }
+  ]
+}

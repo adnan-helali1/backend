@@ -11,6 +11,7 @@ use App\Exceptions\ApiException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,7 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*')) {
+                return null;
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, Request $request) {
@@ -146,6 +153,15 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => $message,
                     'error_code' => 'HTTP_ERROR',
                 ], $status)->withHeaders(['X-Request-Id' => $requestId]);
+            }
+
+            // Route not found (e.g., named route doesn't exist)
+            if ($e instanceof RouteNotFoundException) {
+                return response()->json([
+                    ...$base,
+                    'message' => 'Unauthenticated',
+                    'error_code' => 'UNAUTHENTICATED',
+                ], 401)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
             // Fallback: 500
