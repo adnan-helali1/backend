@@ -101,12 +101,9 @@ Route::prefix('store')->group(function () {
 
         Route::get('dashboard', [DashboardController::class, 'show']);
 
-        Route::middleware('auth:store_api')->group(function () {
-            Route::get('inventory', [InventoryController::class, 'index']);
-Route::post('inventory/manual-add', [InventoryController::class, 'manualAdd']);
-
-        });
-        
+        Route::get('inventory', [InventoryController::class, 'index']);
+        Route::post('inventory/manual-add', [InventoryController::class, 'manualAdd']);
+        Route::get('external-purchases', [InventoryController::class, 'externalPurchases']);
 
     });
 });

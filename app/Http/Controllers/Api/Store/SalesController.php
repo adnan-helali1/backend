@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\SalesItem;
 use App\Models\SalesOrder;
 use App\Models\SalesPayment;
+use App\Models\StoreInventory;
 use App\Models\StoreProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,10 @@ class SalesController extends Controller
                     'line_total' => $lineTotal,
                     'line_cost' => $lineCost,
                 ]);
+
+                StoreInventory::where('store_id', $store->id)
+                    ->where('store_product_id', $storeProduct->id)
+                    ->decrement('quantity', $qty);
 
                 $total += $lineTotal;
                 $totalCost += $lineCost;

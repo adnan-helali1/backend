@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function (Request $request) {
-            if ($request->is('api/*')) {
+            if ($request->is('api/*') || $request->expectsJson()) {
                 return null;
             }
 
@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, Request $request) {
             $isApi = $request->is('api/*') || $request->expectsJson();
+
             if (! $isApi) {
                 return null;
             }
@@ -52,7 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 'request_id' => $requestId,
             ];
 
-            // Business / domain errors we throw intentionally
+            // =============================================
+            // 422 — Validation / Business logic errors
+            // =============================================
+
             if ($e instanceof ApiException) {
                 return response()->json([
                     ...$base,
@@ -62,7 +66,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], $e->status)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // 422 Validation
             if ($e instanceof ValidationException) {
                 return response()->json([
                     ...$base,
@@ -72,7 +75,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 422)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // 401 Authentication (including JWT token issues)
+            // =============================================
+            // 401 — Authentication / Token errors
+            // =============================================
+
             if ($e instanceof AuthenticationException) {
                 return response()->json([
                     ...$base,
@@ -105,7 +111,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // 403 Authorization
+            if ($e instanceof RouteNotFoundException) {
+                return response()->json([
+                    ...$base,
+                    'message' => 'Unauthenticated',
+                    'error_code' => 'UNAUTHENTICATED',
+                ], 401)->withHeaders(['X-Request-Id' => $requestId]);
+            }
+
+            // =============================================
+            // 403 — Authorization
+            // =============================================
+
             if ($e instanceof AuthorizationException) {
                 return response()->json([
                     ...$base,
@@ -114,7 +131,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 403)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // 404 Not Found (models & routes)
+            // =============================================
+            // 404 — Not Found (models / routes)
+            // =============================================
+
             if ($e instanceof ModelNotFoundException) {
                 return response()->json([
                     ...$base,
@@ -131,7 +151,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // 405
+            // =============================================
+            // 405 — Method Not Allowed
+            // =============================================
+
             if ($e instanceof MethodNotAllowedHttpException) {
                 return response()->json([
                     ...$base,
@@ -143,7 +166,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 405)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // Other HTTP exceptions (e.g. 429, 400, etc.)
+            // =============================================
+            // Other HTTP exceptions (e.g., 429, 400)
+            // =============================================
+
             if ($e instanceof HttpExceptionInterface) {
                 $status = $e->getStatusCode();
                 $message = $e->getMessage() ?: 'HTTP error';
@@ -155,16 +181,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], $status)->withHeaders(['X-Request-Id' => $requestId]);
             }
 
-            // Route not found (e.g., named route doesn't exist)
-            if ($e instanceof RouteNotFoundException) {
-                return response()->json([
-                    ...$base,
-                    'message' => 'Unauthenticated',
-                    'error_code' => 'UNAUTHENTICATED',
-                ], 401)->withHeaders(['X-Request-Id' => $requestId]);
-            }
+            // =============================================
+            // 500 — Fallback (unhandled exceptions)
+            // =============================================
 
-            // Fallback: 500
             logger()->error('API unhandled exception', [
                 'request_id' => $requestId,
                 'method' => $request->method(),
