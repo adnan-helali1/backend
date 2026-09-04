@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AdminAuthController extends Controller
 {
@@ -71,5 +72,40 @@ class AdminAuthController extends Controller
             'errors' => null,
         ]);
     }
-}
 
+    public function refresh()
+    {
+        $guard = Auth::guard('admin_api');
+
+        try {
+            $token = $guard->refresh();
+            $admin = $guard->setToken($token)->user();
+
+            if (! $admin || $admin->status !== 'active') {
+                $guard->setToken($token)->invalidate();
+
+                return response()->json([
+                    'data' => null,
+                    'message' => $admin ? 'Account is inactive' : 'Invalid token',
+                    'errors' => null,
+                ], $admin ? 403 : 401);
+            }
+
+            return response()->json([
+                'data' => [
+                    'token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => config('jwt.ttl') * 60,
+                ],
+                'message' => 'Token refreshed',
+                'errors' => null,
+            ]);
+        } catch (JWTException) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Token cannot be refreshed',
+                'errors' => null,
+            ], 401);
+        }
+    }
+}

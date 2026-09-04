@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class StoreAuthController extends Controller
 {
@@ -121,5 +122,40 @@ class StoreAuthController extends Controller
             'errors' => null,
         ]);
     }
-}
 
+    public function refresh()
+    {
+        $guard = Auth::guard('store_api');
+
+        try {
+            $token = $guard->refresh();
+            $store = $guard->setToken($token)->user();
+
+            if (! $store || $store->status !== 'active') {
+                $guard->setToken($token)->invalidate();
+
+                return response()->json([
+                    'data' => null,
+                    'message' => $store ? 'Account is inactive' : 'Invalid token',
+                    'errors' => null,
+                ], $store ? 403 : 401);
+            }
+
+            return response()->json([
+                'data' => [
+                    'token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => config('jwt.ttl') * 60,
+                ],
+                'message' => 'Token refreshed',
+                'errors' => null,
+            ]);
+        } catch (JWTException) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Token cannot be refreshed',
+                'errors' => null,
+            ], 401);
+        }
+    }
+}

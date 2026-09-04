@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->group(function () {
     Route::post('login', [AdminAuthController::class, 'login']);
+    Route::post('refresh', [AdminAuthController::class, 'refresh']);
 
     Route::middleware('auth:admin_api')->group(function () {
         Route::post('logout', [AdminAuthController::class, 'logout']);
@@ -69,6 +70,7 @@ Route::prefix('admin')->group(function () {
 Route::prefix('store')->group(function () {
     Route::post('register', [StoreAuthController::class, 'register']);
     Route::post('login', [StoreAuthController::class, 'login']);
+    Route::post('refresh', [StoreAuthController::class, 'refresh']);
 
     Route::middleware('auth:store_api')->group(function () {
         Route::post('logout', [StoreAuthController::class, 'logout']);
@@ -107,4 +109,3 @@ Route::prefix('store')->group(function () {
 
     });
 });
-
