@@ -23,6 +23,15 @@ class SupplierOffer extends Model
         'expires_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->supplierProduct?->product?->image_url;
+    }
+
     public function supplierProduct(): BelongsTo
     {
         return $this->belongsTo(SupplierProduct::class);

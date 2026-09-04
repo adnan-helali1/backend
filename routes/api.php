@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\StatsController;
 use App\Http\Controllers\Api\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\Admin\SupplierCategoryController;
 use App\Http\Controllers\Api\Admin\SupplierController;
+use App\Http\Controllers\Api\Admin\SupplierOfferController;
 use App\Http\Controllers\Api\Admin\SupplierProductController;
 use App\Http\Controllers\Api\Store\CatalogController;
 use App\Http\Controllers\Api\Store\DashboardController;
@@ -41,6 +42,7 @@ Route::prefix('admin')->group(function () {
 
         Route::apiResource('supplier-products', SupplierProductController::class);
         Route::patch('supplier-products/{supplier_product}/stock', [SupplierProductController::class, 'updateStock']);
+        Route::apiResource('supplier-offers', SupplierOfferController::class);
 
         Route::get('stores', [AdminStoreController::class, 'index']);
         Route::get('stores/{store}', [AdminStoreController::class, 'show']);

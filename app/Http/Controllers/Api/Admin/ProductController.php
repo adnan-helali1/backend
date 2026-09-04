@@ -56,6 +56,7 @@ class ProductController extends Controller
             'buy_price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'status' => ['nullable', 'in:available,unavailable,archived'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -80,10 +81,12 @@ class ProductController extends Controller
         }
 
         $product = Product::create([
-            ...$data,
+            ...collect($data)->except('image')->all(),
             'stock_quantity' => $data['stock_quantity'] ?? 0,
             'status' => $data['status'] ?? 'available',
         ]);
+
+        $product->addMediaFromRequest('image')->toMediaCollection('image');
 
         return response()->json([
             'data' => $product->load(['supplier', 'category']),
@@ -121,6 +124,7 @@ class ProductController extends Controller
             'buy_price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'stock_quantity' => ['sometimes', 'required', 'integer', 'min:0'],
             'status' => ['sometimes', 'required', 'in:available,unavailable,archived'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -146,7 +150,12 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $product->update($data);
+        $product->update(collect($data)->except('image')->all());
+
+        if ($request->hasFile('image')) {
+            $product->clearMediaCollection('image');
+            $product->addMediaFromRequest('image')->toMediaCollection('image');
+        }
 
         return response()->json([
             'data' => $product->fresh()->load(['supplier', 'category']),

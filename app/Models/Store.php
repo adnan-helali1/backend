@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Store extends Authenticatable implements JWTSubject
+class Store extends Authenticatable implements HasMedia, JWTSubject
 {
     use HasFactory;
+    use InteractsWithMedia;
 
     protected $fillable = [
         'name',
@@ -24,6 +27,19 @@ class Store extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
     ];
+
+    protected $appends = [
+        'image_url',
+    ];
+
+    protected $with = [
+        'media',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->getFirstMediaUrl('image') ?: null;
+    }
 
     public function catalog(): HasMany
     {

@@ -12,7 +12,7 @@ class StoreCatalogResource extends JsonResource
     public function toArray(Request $request): array
     {
         $supplierProduct = $this->supplierProduct;
-        
+
         $product = $supplierProduct?->product;
         $buyPrice = (float) ($supplierProduct?->buy_price ?? 0);
         $sellPrice = (float) ($this->sell_price ?? 0);
@@ -35,7 +35,8 @@ class StoreCatalogResource extends JsonResource
             'stock' => $stock,
             'total_profit' => $totalProfit,
             'is_active' => (bool) $this->is_active,
-            'image_url' => $product?->category?->image_url,
+            'image_url' => $product?->image_url,
+            'category_image_url' => $product?->category?->image_url,
         ];
     }
 }

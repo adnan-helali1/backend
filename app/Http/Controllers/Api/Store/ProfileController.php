@@ -30,6 +30,7 @@ class ProfileController extends Controller
             'phone' => ['sometimes', 'required', 'string', 'max:50'],
             'email' => ['sometimes', 'required', 'email', 'max:255', 'unique:stores,email,'.$store->id],
             'address' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -40,7 +41,13 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        $store->update($validator->validated());
+        $data = $validator->validated();
+        $store->update(collect($data)->except('image')->all());
+
+        if ($request->hasFile('image')) {
+            $store->clearMediaCollection('image');
+            $store->addMediaFromRequest('image')->toMediaCollection('image');
+        }
 
         return response()->json([
             'data' => $store->fresh(),

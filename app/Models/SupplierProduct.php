@@ -23,6 +23,15 @@ class SupplierProduct extends Model
         'buy_price' => 'decimal:2',
     ];
 
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->product?->image_url;
+    }
+
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);

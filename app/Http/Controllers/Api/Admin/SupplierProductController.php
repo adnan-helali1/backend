@@ -50,6 +50,7 @@ class SupplierProductController extends Controller
             'buy_price' => ['required', 'numeric', 'min:0'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'status' => ['nullable', 'in:available,unavailable,archived'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -72,6 +73,11 @@ class SupplierProductController extends Controller
                 'message' => 'Validation error',
                 'errors' => ['supplier_id' => ['Supplier is not assigned to the product category.']],
             ], 422);
+        }
+
+        if ($request->hasFile('image')) {
+            $product->clearMediaCollection('image');
+            $product->addMediaFromRequest('image')->toMediaCollection('image');
         }
 
         $supplierProduct = SupplierProduct::updateOrCreate(
@@ -115,6 +121,7 @@ class SupplierProductController extends Controller
             'buy_price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'stock_quantity' => ['sometimes', 'required', 'integer', 'min:0'],
             'status' => ['sometimes', 'required', 'in:available,unavailable,archived'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -125,7 +132,14 @@ class SupplierProductController extends Controller
             ], 422);
         }
 
-        $supplierProduct->update($validator->validated());
+        $data = $validator->validated();
+        $supplierProduct->update(collect($data)->except('image')->all());
+
+        if ($request->hasFile('image')) {
+            $product = $supplierProduct->product;
+            $product->clearMediaCollection('image');
+            $product->addMediaFromRequest('image')->toMediaCollection('image');
+        }
 
         return response()->json([
             'data' => $supplierProduct->fresh()->load(['supplier', 'product.category']),

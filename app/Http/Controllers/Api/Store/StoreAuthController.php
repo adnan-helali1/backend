@@ -21,6 +21,7 @@ class StoreAuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:stores,email'],
             'password' => ['required', 'string', 'min:8'],
             'address' => ['nullable', 'string'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($validator->fails()) {
@@ -43,6 +44,9 @@ class StoreAuthController extends Controller
             'status' => 'active',
         ]);
 
+        $store->addMediaFromRequest('image')->toMediaCollection('image');
+        $store->refresh();
+
         $token = Auth::guard('store_api')->login($store);
 
         return response()->json([
@@ -53,6 +57,7 @@ class StoreAuthController extends Controller
                     'id' => $store->id,
                     'name' => $store->name,
                     'email' => $store->email,
+                    'image_url' => $store->image_url,
                 ],
             ],
             'message' => 'Success',
@@ -105,6 +110,7 @@ class StoreAuthController extends Controller
                     'id' => $store->id,
                     'name' => $store->name,
                     'email' => $store->email,
+                    'image_url' => $store->image_url,
                 ],
             ],
             'message' => 'Success',
