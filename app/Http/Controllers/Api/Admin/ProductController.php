@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\SupplierProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -86,6 +87,18 @@ class ProductController extends Controller
             'status' => $data['status'] ?? 'available',
         ]);
 
+        SupplierProduct::updateOrCreate(
+            [
+                'supplier_id' => $product->supplier_id,
+                'product_id' => $product->id,
+            ],
+            [
+                'buy_price' => $product->buy_price,
+                'stock_quantity' => $product->stock_quantity,
+                'status' => $product->status,
+            ],
+        );
+
         $product->addMediaFromRequest('image')->toMediaCollection('image');
 
         return response()->json([
@@ -152,6 +165,18 @@ class ProductController extends Controller
 
         $product->update(collect($data)->except('image')->all());
 
+        SupplierProduct::updateOrCreate(
+            [
+                'product_id' => $product->id,
+            ],
+            [
+                'supplier_id' => $product->supplier_id,
+                'buy_price' => $product->buy_price,
+                'stock_quantity' => $product->stock_quantity,
+                'status' => $product->status,
+            ],
+        );
+
         if ($request->hasFile('image')) {
             $product->clearMediaCollection('image');
             $product->addMediaFromRequest('image')->toMediaCollection('image');
@@ -170,6 +195,31 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
+
+        $usedInOrders = \App\Models\OrderItem::query()
+            ->where('product_id', $product->id)
+            ->exists();
+
+        $supplierProductIds = $product->supplierProducts()
+            ->pluck('id');
+
+        $usedInSales = ! $supplierProductIds->isEmpty()
+            && \App\Models\SalesItem::query()
+                ->whereIn('supplier_product_id', $supplierProductIds)
+                ->exists();
+
+        if ($usedInOrders || $usedInSales) {
+            return response()->json([
+                'data' => null,
+                'message' => 'This product cannot be deleted because it is used in existing orders or sales.',
+                'errors' => [
+                    'product' => [
+                        'Products used in transaction history cannot be deleted.',
+                    ],
+                ],
+            ], 409);
+        }
+
         $product->delete();
 
         return response()->noContent();
@@ -191,7 +241,21 @@ class ProductController extends Controller
             ], 422);
         }
 
-        $product->update(['stock_quantity' => (int) $validator->validated()['stock_quantity']]);
+        $product->update([
+            'stock_quantity' => (int) $validator->validated()['stock_quantity'],
+        ]);
+
+        SupplierProduct::updateOrCreate(
+            [
+                'product_id' => $product->id,
+            ],
+            [
+                'supplier_id' => $product->supplier_id,
+                'buy_price' => $product->buy_price,
+                'stock_quantity' => $product->stock_quantity,
+                'status' => $product->status,
+            ],
+        );
 
         return response()->json([
             'data' => $product->fresh(),
@@ -200,3 +264,6 @@ class ProductController extends Controller
         ]);
     }
 }
+
+
+

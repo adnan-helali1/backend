@@ -16,6 +16,7 @@ class Category extends Model implements HasMedia
 
     protected $fillable = [
         'name',
+        'color',
     ];
 
     protected $appends = [
@@ -37,3 +38,4 @@ class Category extends Model implements HasMedia
         return $this->hasMany(Product::class);
     }
 }
+

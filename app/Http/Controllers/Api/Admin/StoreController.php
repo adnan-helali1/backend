@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Store;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class StoreController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Store::query();
@@ -22,10 +20,18 @@ class StoreController extends Controller
 
         if ($request->filled('search')) {
             $search = (string) $request->query('search');
-            $query->where('name', 'like', "%{$search}%");
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('owner_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
         }
 
-        $stores = $query->orderByDesc('id')->paginate((int) $request->query('per_page', 15));
+        $stores = $query
+            ->orderByDesc('id')
+            ->paginate((int) $request->query('per_page', 15));
 
         return response()->json([
             'data' => $stores,
@@ -34,21 +40,59 @@ class StoreController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'owner_name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:255', 'unique:stores,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'address' => ['nullable', 'string'],
+            'status' => ['nullable', 'in:active,inactive'],
+            'image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = $validator->validated();
+
+        $store = Store::create([
+            'name' => $data['name'],
+            'owner_name' => $data['owner_name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'address' => $data['address'] ?? null,
+            'status' => $data['status'] ?? 'active',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $store
+                ->addMediaFromRequest('image')
+                ->toMediaCollection('image');
+        }
+
+        $store->refresh();
+
         return response()->json([
-            'data' => null,
-            'message' => 'Not implemented',
+            'data' => $store,
+            'message' => 'Store created successfully',
             'errors' => null,
-        ], 501);
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $store = Store::findOrFail($id);
@@ -60,9 +104,6 @@ class StoreController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         return response()->json([
@@ -72,16 +113,18 @@ class StoreController extends Controller
         ], 501);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
+        $store = Store::findOrFail($id);
+
+        $store->clearMediaCollection('image');
+        $store->delete();
+
         return response()->json([
             'data' => null,
-            'message' => 'Not implemented',
+            'message' => 'Store deleted successfully',
             'errors' => null,
-        ], 501);
+        ]);
     }
 
     public function updateStatus(Request $request, string $id)
@@ -100,7 +143,9 @@ class StoreController extends Controller
             ], 422);
         }
 
-        $store->update(['status' => (string) $validator->validated()['status']]);
+        $store->update([
+            'status' => (string) $validator->validated()['status'],
+        ]);
 
         return response()->json([
             'data' => $store->fresh(),

@@ -45,8 +45,10 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('supplier-offers', SupplierOfferController::class);
 
         Route::get('stores', [AdminStoreController::class, 'index']);
+        Route::post('stores', [AdminStoreController::class, 'store']);
         Route::get('stores/{store}', [AdminStoreController::class, 'show']);
         Route::put('stores/{store}/status', [AdminStoreController::class, 'updateStatus']);
+        Route::delete('stores/{store}', [AdminStoreController::class, 'destroy']);
 
         Route::get('orders', [AdminOrderController::class, 'index']);
         Route::get('orders/{order}', [AdminOrderController::class, 'show']);
